@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use actix_web::{get, App, HttpServer, Responder, HttpResponse, dev::Server};
+use actix_web::{dev::Server, get, App, HttpResponse, HttpServer, Responder};
 
 /// Health check endpoint that will always respond with a 200 response
 #[get("/health_check")]
