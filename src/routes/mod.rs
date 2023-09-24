@@ -1,3 +1,3 @@
-mod health_check;
+mod health;
 
-pub use health_check::*;
+pub use health::*;
