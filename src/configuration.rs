@@ -1,11 +1,13 @@
 use serde::Deserialize;
 
+/// App-wide configuration
 #[derive(Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application_port: u16,
 }
 
+/// Settings needed for connecting to a DB.
 #[derive(Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
@@ -15,6 +17,10 @@ pub struct DatabaseSettings {
     pub database_name: String,
 }
 
+/// Reads app configuration from the default file location.
+///
+/// Returns an error if parsing the config file into a `Settings` struct fails. This
+/// could be a problem reading from the file or a malformed file.
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     config::Config::builder()
         .add_source(config::File::with_name("configuration"))
@@ -23,6 +29,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 }
 
 impl DatabaseSettings {
+    /// Get a string to connect to a specific DB
     pub fn connection_string(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",
@@ -30,6 +37,8 @@ impl DatabaseSettings {
         )
     }
 
+    /// Get a string to connect to an instance, for doing work unrelated to a specific
+    /// DB. E.g. if we need to create new DB.
     pub fn connection_string_for_instance(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}",
