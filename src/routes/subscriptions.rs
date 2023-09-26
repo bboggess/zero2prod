@@ -1,4 +1,4 @@
-use actix_web::{post, web, HttpResponse, Responder};
+use actix_web::{post, web, HttpResponse};
 use chrono::Utc;
 use serde::Deserialize;
 use sqlx::PgPool;
@@ -21,10 +21,10 @@ pub struct FormData {
     )
 )]
 #[post("/subscribe")]
-pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> impl Responder {
+pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> HttpResponse {
     match insert_subscriber(&form, &pool).await {
-        Ok(_) => HttpResponse::Ok(),
-        Err(_) => HttpResponse::InternalServerError(),
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
 
