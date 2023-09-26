@@ -1,3 +1,4 @@
+use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 
 /// App-wide configuration
@@ -11,7 +12,7 @@ pub struct Settings {
 #[derive(Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
-    pub password: String,
+    pub password: Secret<String>,
     pub port: u16,
     pub host: String,
     pub database_name: String,
@@ -30,19 +31,26 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 
 impl DatabaseSettings {
     /// Get a string to connect to a specific DB
-    pub fn connection_string(&self) -> String {
-        format!(
+    pub fn connection_string(&self) -> Secret<String> {
+        Secret::new(format!(
             "postgres://{}:{}@{}:{}/{}",
-            self.username, self.password, self.host, self.port, self.database_name
-        )
+            self.username,
+            self.password.expose_secret(),
+            self.host,
+            self.port,
+            self.database_name
+        ))
     }
 
     /// Get a string to connect to an instance, for doing work unrelated to a specific
     /// DB. E.g. if we need to create new DB.
-    pub fn connection_string_for_instance(&self) -> String {
-        format!(
+    pub fn connection_string_for_instance(&self) -> Secret<String> {
+        Secret::new(format!(
             "postgres://{}:{}@{}:{}",
-            self.username, self.password, self.host, self.port
-        )
+            self.username,
+            self.password.expose_secret(),
+            self.host,
+            self.port
+        ))
     }
 }
