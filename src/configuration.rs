@@ -29,10 +29,48 @@ pub struct DatabaseSettings {
 /// Returns an error if parsing the config file into a `Settings` struct fails. This
 /// could be a problem reading from the file or a malformed file.
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
+    let base_path = std::env::current_dir().expect("Failed to determine current directory.");
+    let config_dir = base_path.join("config");
+
+    let environment: Environment = std::env::var("APP_ENVIRONMENT")
+        .unwrap_or_else(|_| "local".into())
+        .try_into()
+        .expect("Failed to parse APP_ENVIRONMENT");
+
     config::Config::builder()
-        .add_source(config::File::with_name("configuration"))
+        .add_source(config::File::from(config_dir.join("base")).required(true))
+        .add_source(config::File::from(config_dir.join(environment.as_str())))
         .build()?
         .try_deserialize()
+}
+
+pub enum Environment {
+    Local,
+    Production,
+}
+
+impl Environment {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Local => "local",
+            Self::Production => "production",
+        }
+    }
+}
+
+impl TryFrom<String> for Environment {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match value.to_lowercase().as_str() {
+            "local" => Ok(Self::Local),
+            "production" => Ok(Self::Production),
+            s => Err(format!(
+                "{} is not a supported environment. Use either `local` or `production`",
+                s
+            )),
+        }
+    }
 }
 
 impl DatabaseSettings {
