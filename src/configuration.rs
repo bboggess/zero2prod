@@ -1,6 +1,6 @@
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
-use sqlx::postgres::PgConnectOptions;
+use sqlx::postgres::{PgConnectOptions, PgSslMode};
 
 /// App-wide configuration
 #[derive(Deserialize)]
@@ -23,6 +23,7 @@ pub struct DatabaseSettings {
     pub port: u16,
     pub host: String,
     pub database_name: String,
+    pub require_ssl: bool,
 }
 
 /// Reads app configuration from the default file location.
@@ -84,10 +85,17 @@ impl DatabaseSettings {
     /// Get a string to connect to an instance, for doing work unrelated to a specific
     /// DB. E.g. if we need to create new DB.
     pub fn instance_connection(&self) -> PgConnectOptions {
+        let ssl_mode = if self.require_ssl {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Prefer
+        };
+
         PgConnectOptions::new()
             .host(&self.host)
             .username(&self.username)
             .password(&self.password.expose_secret())
             .port(self.port)
+            .ssl_mode(ssl_mode)
     }
 }
