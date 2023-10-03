@@ -1,11 +1,5 @@
 use unicode_segmentation::UnicodeSegmentation;
 
-/// Captures all of the information we need to register a new subscriber.
-pub struct NewSubscriber {
-    pub email: String,
-    pub name: SubscriberName,
-}
-
 /// The name of a subscriber. Enforces invariants of a valid subscriber name, so
 /// if you have an instance of this, the name is guaranteed to be valid.
 ///
