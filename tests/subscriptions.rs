@@ -59,7 +59,11 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
 async fn subscribe_returns_a_400_when_fields_are_invalid() {
     let app = app::spawn_app().await;
     let client = reqwest::Client::new();
-    let test_cases = vec![("name=&email=ursula_le_guin%40gmail.com", "empty name")];
+    let test_cases = vec![
+        ("name=&email=ursula_le_guin%40gmail.com", "empty name"),
+        ("name=Ursula&email=", "empty email"),
+        ("name=Ursula&email=definitely-not-an-email", "invalid email"),
+    ];
 
     for (body, description) in test_cases {
         let response = client
