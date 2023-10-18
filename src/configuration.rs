@@ -2,17 +2,44 @@ use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use sqlx::postgres::{PgConnectOptions, PgSslMode};
 
+use crate::domain::SubscriberEmail;
+
 /// App-wide configuration
 #[derive(Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub email_client: EmailClientSettings,
 }
 
 #[derive(Deserialize)]
 pub struct ApplicationSettings {
     pub host: String,
     pub port: u16,
+}
+
+impl DatabaseSettings {
+    /// Get a string to connect to a specific DB
+    pub fn database_connection(&self) -> PgConnectOptions {
+        self.instance_connection().database(&self.database_name)
+    }
+
+    /// Get a string to connect to an instance, for doing work unrelated to a specific
+    /// DB. E.g. if we need to create new DB.
+    pub fn instance_connection(&self) -> PgConnectOptions {
+        let ssl_mode = if self.require_ssl {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Prefer
+        };
+
+        PgConnectOptions::new()
+            .host(&self.host)
+            .username(&self.username)
+            .password(self.password.expose_secret())
+            .port(self.port)
+            .ssl_mode(ssl_mode)
+    }
 }
 
 /// Settings needed for connecting to a DB.
@@ -24,6 +51,21 @@ pub struct DatabaseSettings {
     pub host: String,
     pub database_name: String,
     pub require_ssl: bool,
+}
+
+#[derive(Deserialize)]
+pub struct EmailClientSettings {
+    pub base_url: String,
+    pub sender_email: String,
+}
+
+impl EmailClientSettings {
+    /// Parses and validates the email address to use a sender.
+    ///
+    /// This will clone strings, so don't call it in a loop or anything.
+    pub fn sender(&self) -> Result<SubscriberEmail, String> {
+        SubscriberEmail::parse(self.sender_email.clone())
+    }
 }
 
 /// Reads app configuration from the default file location.
@@ -73,29 +115,5 @@ impl TryFrom<String> for Environment {
                 s
             )),
         }
-    }
-}
-
-impl DatabaseSettings {
-    /// Get a string to connect to a specific DB
-    pub fn database_connection(&self) -> PgConnectOptions {
-        self.instance_connection().database(&self.database_name)
-    }
-
-    /// Get a string to connect to an instance, for doing work unrelated to a specific
-    /// DB. E.g. if we need to create new DB.
-    pub fn instance_connection(&self) -> PgConnectOptions {
-        let ssl_mode = if self.require_ssl {
-            PgSslMode::Require
-        } else {
-            PgSslMode::Prefer
-        };
-
-        PgConnectOptions::new()
-            .host(&self.host)
-            .username(&self.username)
-            .password(self.password.expose_secret())
-            .port(self.port)
-            .ssl_mode(ssl_mode)
     }
 }
