@@ -53,10 +53,13 @@ pub struct DatabaseSettings {
     pub require_ssl: bool,
 }
 
+/// Configuration for the email client, responsible for the actual
+/// sending of messages to subscribers.
 #[derive(Deserialize)]
 pub struct EmailClientSettings {
     pub base_url: String,
     pub sender_email: String,
+    pub authorization_token: Secret<String>,
 }
 
 impl EmailClientSettings {
