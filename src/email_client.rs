@@ -46,11 +46,11 @@ impl EmailClient {
     ) -> Result<(), reqwest::Error> {
         let url = self.base_url.join("email").unwrap();
         let body = SendEmailRequest {
-            from: self.sender.as_ref().into(),
-            to: recipient.as_ref().into(),
-            subject: subject.into(),
-            html_body: html_content.into(),
-            text_body: text_content.into(),
+            from: self.sender.as_ref(),
+            to: recipient.as_ref(),
+            subject,
+            html_body: html_content,
+            text_body: text_content,
         };
 
         let _ = self
@@ -71,12 +71,12 @@ impl EmailClient {
 /// The format of a request body required by the Postmark email send API
 #[derive(Serialize)]
 #[serde(rename_all = "PascalCase")]
-struct SendEmailRequest {
-    from: String,
-    to: String,
-    subject: String,
-    html_body: String,
-    text_body: String,
+struct SendEmailRequest<'a> {
+    from: &'a str,
+    to: &'a str,
+    subject: &'a str,
+    html_body: &'a str,
+    text_body: &'a str,
 }
 
 #[cfg(test)]
