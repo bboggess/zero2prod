@@ -49,7 +49,12 @@ pub async fn spawn_app() -> TestApp {
     let email_config = configuration.email_client;
     let base_url = Url::parse(&email_config.base_url).expect("Invalid base URL");
     let sender_email = email_config.sender().expect("Invalid sender email address");
-    let email_client = EmailClient::new(base_url, sender_email, email_config.authorization_token);
+    let email_client = EmailClient::new(
+        base_url,
+        sender_email,
+        email_config.authorization_token,
+        std::time::Duration::from_millis(200),
+    );
 
     let server = zero2prod::startup::run(listener, connection_pool.clone(), email_client)
         .expect("Failed to bind to address");

@@ -22,7 +22,13 @@ async fn main() -> std::io::Result<()> {
     let email_config = configuration.email_client;
     let base_url = Url::parse(&email_config.base_url).expect("Invalid base URL");
     let sender_email = email_config.sender().expect("Invalid sender email address");
-    let email_client = EmailClient::new(base_url, sender_email, email_config.authorization_token);
+    let timeout = email_config.timeout();
+    let email_client = EmailClient::new(
+        base_url,
+        sender_email,
+        email_config.authorization_token,
+        timeout,
+    );
 
     run(listener, connection_pool, email_client)?.await
 }

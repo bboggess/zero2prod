@@ -19,16 +19,16 @@ impl EmailClient {
     /// Creates an email client. Emails will be sent from `sender`.
     ///
     /// `base_url` is a URL where requests can be sent to the client. `authorization_token`
-    /// is used to authorize all requests to the client.  
+    /// is used to authorize all requests to the client.
+    ///
+    /// `timeout` is the timeout for sending an email address
     pub fn new(
         base_url: Url,
         sender: SubscriberEmail,
         authorization_token: Secret<String>,
+        timeout: Duration,
     ) -> Self {
-        let http_client = Client::builder()
-            .timeout(Duration::from_secs(10))
-            .build()
-            .unwrap();
+        let http_client = Client::builder().timeout(timeout).build().unwrap();
 
         Self {
             sender,
@@ -43,7 +43,8 @@ impl EmailClient {
     /// Tries to use `html_content` for the body, but will fall back to `text_content`
     /// if the recipient doesn't support HTML in the body.
     ///
-    /// Returns an `Err` if there is a failure communicating with the email client.
+    /// Returns an `Err` if there is a failure communicating with the email client,
+    /// including timeout.
     pub async fn send_email(
         &self,
         recipient: SubscriberEmail,
@@ -140,7 +141,12 @@ mod tests {
 
     /// Configure an email client listening at `base_url`
     fn email_client(base_url: Url) -> EmailClient {
-        EmailClient::new(base_url, email(), Secret::new(Faker.fake()))
+        EmailClient::new(
+            base_url,
+            email(),
+            Secret::new(Faker.fake()),
+            Duration::from_millis(200), // fail fast in tests!
+        )
     }
 
     #[tokio::test]
