@@ -1,3 +1,4 @@
+use crate::app;
 use sqlx;
 
 #[actix_web::test]

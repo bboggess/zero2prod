@@ -1,3 +1,5 @@
+use crate::app;
+
 #[actix_web::test]
 async fn health_check_works() {
     let app = app::spawn_app().await;
