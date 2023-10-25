@@ -31,6 +31,29 @@ pub struct TestApp {
     pub db_pool: PgPool,
 }
 
+impl TestApp {
+    /// Send a POST with `body` to the subscriptions API of our mocked app
+    pub async fn post_subscriptions(
+        &self,
+        body: String,
+    ) -> Result<reqwest::Response, reqwest::Error> {
+        reqwest::Client::new()
+            .post(&format!("{}/subscribe", self.address))
+            .header("Content-type", "application/x-www-form-urlencoded")
+            .body(body)
+            .send()
+            .await
+    }
+
+    /// Send a GET to the health_check API of our mocked app
+    pub async fn get_health_check(&self) -> Result<reqwest::Response, reqwest::Error> {
+        reqwest::Client::new()
+            .get(&format!("{}/health_check", &self.address))
+            .send()
+            .await
+    }
+}
+
 /// Spins up a testing app to write integration tests against.
 /// Returns the address to connect to.
 pub async fn spawn_app() -> TestApp {
