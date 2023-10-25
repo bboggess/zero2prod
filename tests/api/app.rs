@@ -15,6 +15,7 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "debug".into();
     let subscriber_name = "test".into();
 
+    // We use an environment variable to decide whether to swallow logs.
     // Need two separate blocks because the generic types on get_subscriber differ
     if std::env::var("TEST_LOG").is_ok() {
         let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::stdout);
@@ -36,6 +37,7 @@ pub struct TestApp {
 /// Spins up a testing app to write integration tests against.
 /// Returns the address to connect to.
 pub async fn spawn_app() -> TestApp {
+    // TRACING will only run the first time this function is called.
     Lazy::force(&TRACING);
 
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port");
