@@ -1,9 +1,19 @@
 use crate::app;
 use sqlx;
+use wiremock::{
+    matchers::{method, path},
+    Mock, ResponseTemplate,
+};
 
 #[actix_web::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
     let app = app::spawn_app().await;
+
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .mount(&app.email_server)
+        .await;
 
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
     let response = app
@@ -20,6 +30,26 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
 
     assert_eq!(saved.name, "le guin");
     assert_eq!(saved.email, "ursula_le_guin@gmail.com");
+}
+
+#[actix_web::test]
+async fn subscribe_sends_a_confirmation_email_for_valid_data() {
+    let app = app::spawn_app().await;
+    let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
+
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(1)
+        .mount(&app.email_server)
+        .await;
+
+    let _ = app
+        .post_subscriptions(body.into())
+        .await
+        .expect("Failed to execute request");
+
+    // Mock::expect handles assertion that we sent POST to /email
 }
 
 #[actix_web::test]
