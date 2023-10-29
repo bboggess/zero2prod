@@ -8,7 +8,7 @@ use url::Url;
 use crate::{
     configuration::{DatabaseSettings, Settings},
     email_client::EmailClient,
-    routes::{health_check, subscribe},
+    routes::{confirm, health_check, subscribe},
 };
 
 /// A running application
@@ -73,6 +73,7 @@ fn run(
             .wrap(TracingLogger::default())
             .service(health_check)
             .service(subscribe)
+            .route("/subscriptions/confirm", web::get().to(confirm))
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
     })

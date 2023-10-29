@@ -47,6 +47,14 @@ impl TestApp {
             .await
     }
 
+    /// Send a GET request to confirm a newsletter subscription
+    pub async fn get_subscription_confirmation(&self) -> Result<reqwest::Response, reqwest::Error> {
+        reqwest::Client::new()
+            .get(&format!("{}/subscriptions/confirm", &self.address))
+            .send()
+            .await
+    }
+
     /// Send a GET to the health_check API of our mocked app
     pub async fn get_health_check(&self) -> Result<reqwest::Response, reqwest::Error> {
         reqwest::Client::new()
