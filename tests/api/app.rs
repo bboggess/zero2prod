@@ -28,6 +28,8 @@ static TRACING: Lazy<()> = Lazy::new(|| {
 pub struct TestApp {
     /// Address to send requests to the mock app
     pub address: String,
+    /// Port the mock app is listening on
+    pub port: u16,
     /// Pool to use for DB connections in testing
     pub db_pool: PgPool,
     pub email_server: MockServer,
@@ -89,11 +91,13 @@ pub async fn spawn_app() -> TestApp {
     let app = Application::build(configuration.clone())
         .await
         .expect("Failed to build application");
-    let address = format!("http://127.0.0.1:{}", app.port());
+    let port = app.port();
+    let address = format!("http://127.0.0.1:{}", port);
     let _ = tokio::spawn(app.run_until_stopped());
 
     TestApp {
         address,
+        port,
         db_pool: get_connection_pool(&configuration.database),
         email_server,
     }
