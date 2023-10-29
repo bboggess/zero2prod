@@ -15,10 +15,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
         .mount(&app.email_server)
         .await;
 
-    let response = app
-        .post_subscriptions(body.into())
-        .await
-        .expect("Failed to execute request");
+    let response = app.post_subscriptions(body.into()).await;
 
     assert_eq!(200, response.status().as_u16());
 }
@@ -33,10 +30,7 @@ async fn subscribe_persists_new_subscriber() {
         .mount(&app.email_server)
         .await;
 
-    let _ = app
-        .post_subscriptions(body.into())
-        .await
-        .expect("Failed to execute request");
+    let _ = app.post_subscriptions(body.into()).await;
 
     let saved = sqlx::query!("SELECT email, name, status FROM subscriptions")
         .fetch_one(&app.db_pool)
@@ -60,10 +54,7 @@ async fn subscribe_sends_a_confirmation_email_for_valid_data() {
         .mount(&app.email_server)
         .await;
 
-    let _ = app
-        .post_subscriptions(body.into())
-        .await
-        .expect("Failed to execute request");
+    let _ = app.post_subscriptions(body.into()).await;
 
     // Mock::expect handles assertion that we sent POST to /email
 }
@@ -79,10 +70,7 @@ async fn subscribe_sends_a_confirmation_email_with_a_link() {
         .mount(&app.email_server)
         .await;
 
-    let _ = app
-        .post_subscriptions(body.into())
-        .await
-        .expect("Failed to execute request");
+    let _ = app.post_subscriptions(body.into()).await;
 
     let email_request = &app.email_server.received_requests().await.unwrap()[0];
 
@@ -100,10 +88,7 @@ async fn subscribe_returns_a_400_when_data_is_missing() {
     ];
 
     for (invalid_body, error_message) in test_cases {
-        let response = app
-            .post_subscriptions(invalid_body.into())
-            .await
-            .expect("Failed to execute request");
+        let response = app.post_subscriptions(invalid_body.into()).await;
 
         assert_eq!(
             400,
@@ -124,10 +109,7 @@ async fn subscribe_returns_a_400_when_fields_are_invalid() {
     ];
 
     for (body, description) in test_cases {
-        let response = app
-            .post_subscriptions(body.into())
-            .await
-            .expect("Failed to execute request");
+        let response = app.post_subscriptions(body.into()).await;
 
         assert_eq!(
             400,

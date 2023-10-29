@@ -38,32 +38,32 @@ pub struct TestApp {
 
 impl TestApp {
     /// Send a POST with `body` to the subscriptions API of our mocked app
-    pub async fn post_subscriptions(
-        &self,
-        body: String,
-    ) -> Result<reqwest::Response, reqwest::Error> {
+    pub async fn post_subscriptions(&self, body: String) -> reqwest::Response {
         reqwest::Client::new()
             .post(&format!("{}/subscribe", self.address))
             .header("Content-type", "application/x-www-form-urlencoded")
             .body(body)
             .send()
             .await
+            .expect("Failed to execute request")
     }
 
     /// Send a GET request to confirm a newsletter subscription
-    pub async fn get_subscription_confirmation(&self) -> Result<reqwest::Response, reqwest::Error> {
+    pub async fn get_subscription_confirmation(&self) -> reqwest::Response {
         reqwest::Client::new()
             .get(&format!("{}/subscriptions/confirm", &self.address))
             .send()
             .await
+            .expect("Failed to execute request")
     }
 
     /// Send a GET to the health_check API of our mocked app
-    pub async fn get_health_check(&self) -> Result<reqwest::Response, reqwest::Error> {
+    pub async fn get_health_check(&self) -> reqwest::Response {
         reqwest::Client::new()
             .get(&format!("{}/health_check", &self.address))
             .send()
             .await
+            .expect("Failed to execute request")
     }
 
     /// Reads the body of `email_request` and pulls out the links to the confirmation API

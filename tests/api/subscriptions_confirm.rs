@@ -9,10 +9,7 @@ use crate::app;
 async fn confirmations_without_token_are_rejected_with_400() {
     let app = app::spawn_app().await;
 
-    let response = app
-        .get_subscription_confirmation()
-        .await
-        .expect("Failed to execute request");
+    let response = app.get_subscription_confirmation().await;
 
     assert_eq!(response.status(), 400);
 }
@@ -27,10 +24,7 @@ async fn the_link_returned_by_subscribe_returns_200_when_called() {
         .mount(&app.email_server)
         .await;
 
-    let _ = app
-        .post_subscriptions(body.into())
-        .await
-        .expect("Failed to execute request");
+    let _ = app.post_subscriptions(body.into()).await;
 
     let email_request = &app.email_server.received_requests().await.unwrap()[0];
     let confirmation_links = app.get_confirmation_links(email_request);
