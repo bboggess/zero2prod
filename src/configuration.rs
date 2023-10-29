@@ -14,8 +14,12 @@ pub struct Settings {
 
 #[derive(Deserialize, Clone)]
 pub struct ApplicationSettings {
+    /// Host used for specifying how the app will listen to network connections
     pub host: String,
+    /// Port the app is listening for connections on
     pub port: u16,
+    /// The base URL to use to build API requests
+    pub base_url: String,
 }
 
 impl DatabaseSettings {
