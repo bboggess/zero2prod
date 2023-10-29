@@ -39,7 +39,7 @@ impl Application {
         let listener = TcpListener::bind(app_address)?;
         let port = listener.local_addr().unwrap().port();
 
-        let server = run(listener, connection_pool, email_client)?;
+        let server = run(listener, connection_pool, email_client, app_config.base_url)?;
         Ok(Self { port, server })
     }
 
@@ -59,14 +59,19 @@ pub fn get_connection_pool(settings: &DatabaseSettings) -> PgPool {
     PgPool::connect_lazy_with(settings.database_connection())
 }
 
+/// Wrapper for base URL for building API requests. Need a wrapper so we can register with app data.
+pub struct ApplicationBaseUrl(pub String);
+
 /// Starts a server, listening on `listener`, running in the background and returns it
 fn run(
     listener: TcpListener,
     db_pool: PgPool,
     email_client: EmailClient,
+    base_url: String,
 ) -> std::io::Result<Server> {
     let db_pool = web::Data::new(db_pool);
     let email_client = web::Data::new(email_client);
+    let base_url = web::Data::new(ApplicationBaseUrl(base_url));
 
     let server = HttpServer::new(move || {
         App::new()
@@ -76,6 +81,7 @@ fn run(
             .route("/subscriptions/confirm", web::get().to(confirm))
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
+            .app_data(base_url.clone())
     })
     .listen(listener)?
     .run();
