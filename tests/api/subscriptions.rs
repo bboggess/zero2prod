@@ -38,13 +38,14 @@ async fn subscribe_persists_new_subscriber() {
         .await
         .expect("Failed to execute request");
 
-    let saved = sqlx::query!("SELECT email, name FROM subscriptions")
+    let saved = sqlx::query!("SELECT email, name, status FROM subscriptions")
         .fetch_one(&app.db_pool)
         .await
         .expect("Failed to fetch saved info from the database");
 
     assert_eq!(saved.name, "le guin");
     assert_eq!(saved.email, "ursula_le_guin@gmail.com");
+    assert_eq!(saved.status, "pending_confirmation");
 }
 
 #[actix_web::test]
